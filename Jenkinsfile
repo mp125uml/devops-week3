@@ -7,7 +7,7 @@ podTemplate(containers: [
 	]) {
 	node(POD_LABEL) {
 		stage('Run pipeline against a gradle project') {
-			git 'https://github.com/mp125uml/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
+			git 'https://github.com/dlambrig/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
 			container('gradle') {
 				stage('Build a gradle project') {
 				sh '''
@@ -22,18 +22,7 @@ podTemplate(containers: [
 					sh ''' pwd
 					cd Chapter08/sample1
 					./gradlew jacocoTestCoverageVerification
-					'''
-			} catch (Exception E) {
-				echo 'Failure detected' 
-			}
-		
-		}
-
-		stage("Checkstyle") { 
-			try {
-					sh ''' pwd
-					cd Chapter08/sample1
-					./gradlew checkstyleTest
+					./gradlew jacocoTestReport
 					'''
 			} catch (Exception E) {
 				echo 'Failure detected' 
@@ -42,7 +31,24 @@ podTemplate(containers: [
 			publishHTML (target: [
 				reportDir: 'Chapter08/sample1/build/reports/jacoco/test/html',
 				reportFiles: 'index.html',
-				reportName: "JaCoCo Checkstyle"
+				reportName: "JaCoCo Report"
+			]) 
+		}
+
+		stage("Checkstyle") { 
+			try {
+					sh ''' pwd
+					cd Chapter08/sample1
+					./gradlew checkstyleTest
+					./gradlew jacocoTestReport
+					'''
+			} catch (Exception E) {
+				echo 'Failure detected' 
+			}
+		
+			publishHTML (target: [
+				reportDir: 'Chapter08/sample1/build/reports/jacoco/test/html',
+				reportFiles: 'checkstyle.html'
 			]) 
 		}
 	} 	
