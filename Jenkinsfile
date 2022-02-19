@@ -1,23 +1,40 @@
-podTemplate(containers: [
-    containerTemplate(
-        name: 'maven',
-        image: 'maven:3.8.1-jdk-8',
-        command: 'sleep',
-        args: '30d'
-        ),
-  ]) {
+podTemplate(containers: [ 
+	containerTemplate(
+		name: 'gradle',
+		image: 'gradle:6.3-jdk14', command: 'sleep',
+		args: '30d'
+		),
+	]) {
+	node(POD_LABEL) {
+		stage('Run pipeline against a gradle project') {
+			git 'https://github.com/dlambrig/Continuous-Delivery-with-Docker-and-Jenkins-Second-Edition.git'
+			container('gradle') {
+				stage('Build a gradle project') {
+				sh '''
+				cd Chapter08/sample1 
+				chmod +x gradlew 
+				./gradlew test
+				'''
+				}
 
-    node(POD_LABEL) {
-        stage('Get a Maven project') {
-            git 'https://github.com/dlambrig/simple-java-maven-app.git'
-            container('maven') {
-                stage('Build a Maven project') {
-                    sh '''
-                    echo "maven build"
-                    mvn -B -DskipTests clean package
-                    '''
-                    }
-            }
-        }
-   }
+		stage("Code coverage") { 
+			try {
+					sh ''' pwd
+					cd Chapter08/sample1
+					./gradlew jacocoTestCoverageVerification
+					./gradlew jacocoTestReport
+					'''
+			} catch (Exception E) {
+				echo 'Failure detected' 
+			}
+		
+			publishHTML (target: [
+				reportDir: 'Chapter08/sample1/build/reports/jacoco/test/html',
+				reportFiles: 'index.html',
+				reportName: "JaCoCo Report"
+			]) 
+		}
+	} 	
+}
+} 
 }
