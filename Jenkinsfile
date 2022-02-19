@@ -40,14 +40,13 @@ podTemplate(containers: [
 					sh ''' pwd
 					cd Chapter08/sample1
 					./gradlew checkstyleTest
-					./gradlew jacocoTestReport
 					'''
 			} catch (Exception E) {
 				echo 'Failure detected' 
 			}
 		
 			publishHTML (target: [
-				reportDir: 'Chapter08/sample1/build/reports/jacoco/test/html2',
+				reportDir: 'Chapter08/sample1/build/reports/jacoco/test/html',
 				reportFiles: 'index.html',
 				reportName: "JaCoCo Checkstyle"
 			]) 
